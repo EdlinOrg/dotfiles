@@ -1,0 +1,51 @@
+function cd {
+    builtin cd $@
+    setup_prompt
+}
+
+# Change color of prompt depending on the path
+function setup_prompt {
+    # https://wiki.archlinux.org/index.php/Color_Bash_Prompt
+    pwd=$(pwd)
+    prefix=""
+    postfix="\[\033[00m\]"
+    meprompt=">"
+    mehome="Users/EdlinOrg"
+    mehomeslash="/"$mehome
+    megithbranch=""
+    
+    if [[ "$pwd/" =~ ^/$mehome/git/ ]] ; then
+	megithbranch='`git branch 2> /dev/null | grep -e ^* | sed -E  s/^\\\\\*\ \(.+\)$/\(\\\\\1\)\/`'
+	prefix="\[\033[44m\033[01;37m\]" #blue bg, white text
+	meprompt=$postfix' '$meprompt
+	postfix=""
+    elif [[ "$pwd/" =~ ^/$mehome/Documents/ ]] ; then
+	prefix="\[\033[01;35m\]"
+    elif [[ "$pwd/" =~ ^/$mehome/Projects/ ]] ; then
+	prefix="\[\033[42m\033[1;37m\]" #green bg, white text
+	meprompt=$postfix' '$meprompt
+	postfix=""
+    elif [[ "$pwd/" =~ ^/some/path/ ]] ; then
+	prefix="\[\033[01;36m\]"
+    elif [[ "$pwd" == $mehomeslash ]] ; then
+	prefix="\[\033[01;32m\]"
+    elif [[ "$pwd/" =~ ^/tmp/ ]] ; then
+	prefix="\[\033[01;31m\]"
+    elif [[ "$pwd/" =~ ^/$mehome/somethingelse/ ]] ; then
+	prefix="\[\033[41m\033[1;37m\]" #red bg, white text
+	meprompt=$postfix' '$meprompt
+	postfix=""
+    else
+	postfix=""
+    fi
+
+    # Emoji in prompt to quickly see that I am on local and not remote
+    tennisball="🎾"
+    tigerface="🐯"
+    fish="🐠"
+    
+    # Date/time in prompt to see which was most recent when switching between terminals
+    export PS1=$prefix$tigerface' \D{%d%b %H:%M} \w '$megithbranch$meprompt$postfix
+}
+
+setup_prompt
